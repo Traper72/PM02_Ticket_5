@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -21,10 +22,12 @@ namespace PM02_Ticket_5
             { 6750, "Двери" }
         };
         string typeService;
+        decimal sumResult;
         public Form1()
         {
             InitializeComponent();
 
+            //Заполнение комбо бокса из словаря
             comboBoxService.DataSource = new BindingSource(ServiceType, null);
             comboBoxService.ValueMember = "Key";
             comboBoxService.DisplayMember = "Value";
@@ -32,6 +35,7 @@ namespace PM02_Ticket_5
 
         private void buttonLoadPicture_Click(object sender, EventArgs e)
         {
+            //Путь проекта
             string path = Environment.CurrentDirectory;
 
             pictureBox1.ImageLocation = Path.Combine(path, @"..\..\ресурсы\логотипы\Окна2.jpg");
@@ -41,12 +45,16 @@ namespace PM02_Ticket_5
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            radioButton1.Select();
+            radioButton1.Checked = true;
             buttonGetReceipt.Enabled = false;
         }
 
         private void buttonGetReceipt_Click(object sender, EventArgs e)
         {
+            var id = Guid.NewGuid().ToString();
+            var date = DateTime.Now.ToString("dd-mm-yyyy");
+            var title = $"{comboBoxService.Text} тип {typeService}";
+            var sum = sumResult.ToString().Replace(',', '.');
             string startupPath = Path.Combine(Environment.CurrentDirectory, "..\\..\\");
             Word.Document doc = null;
             try
@@ -76,14 +84,32 @@ namespace PM02_Ticket_5
                 // Открываем
                 doc = app.Documents.Open(source);
                 doc.Activate();
+
                 Word.Bookmarks wBookmarks = doc.Bookmarks;
                 Word.Range wRange;
-                
-                Word.Range range = app.Selection.Range;
-                
+                int i = 0;
+
+                string[] data = new string[4] { date, sum, title, id };
+                foreach (Word.Bookmark mark in wBookmarks)
+                {
+
+                    wRange = mark.Range;
+                    wRange.Text = data[i];
+                    var d = wRange.InlineShapes;
+                    i++;
+                    if (i >= data.Length)
+                    {
+                        break;
+                    }
+                }
+
+                string Name = $"{id}_{date}_{sumResult}";
+                doc.SaveAs2(startupPath + "Квитанции\\" + $@"Квитанция {Name}.docx");
 
                 doc.Close();
                 doc = null;
+                app.Quit();
+                MessageBox.Show("Квитанция создана", "Уведомление", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
             catch (Exception ex)
@@ -95,6 +121,7 @@ namespace PM02_Ticket_5
         }
         private void buttonCalculation_Click(object sender, EventArgs e)
         {
+            //Проверка на валидность
             if (string.IsNullOrWhiteSpace(textBoxWidth.Text) || string.IsNullOrWhiteSpace(textBoxHeight.Text))
             {
                 MessageBox.Show("Заполните поля", "Уведомление", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -112,7 +139,7 @@ namespace PM02_Ticket_5
 
             try
             {
-                decimal sumResult = Calculation(width, height, service, typeService);
+                sumResult = Calculation(width, height, service, typeService);
                 labelResult.Text = "Вывод расчетов:\n" + sumResult;
                 buttonGetReceipt.Enabled = true;
             }
@@ -122,6 +149,7 @@ namespace PM02_Ticket_5
             }
         }
 
+        //Метод расчета
         public decimal Calculation(int width, int height, decimal service, string typeService)
         {
             decimal sumResult;
@@ -186,6 +214,21 @@ namespace PM02_Ticket_5
                 typeService = "Раздвижное";
                 return;
             }
+        }
+
+        private void comboBoxService_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            buttonGetReceipt.Enabled = false;
+        }
+
+        private void textBoxWidth_TextChanged(object sender, EventArgs e)
+        {
+            buttonGetReceipt.Enabled = false;
+        }
+
+        private void textBoxHeight_TextChanged(object sender, EventArgs e)
+        {
+            buttonGetReceipt.Enabled = false;
         }
     }
 }

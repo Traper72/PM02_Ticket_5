@@ -64,6 +64,7 @@
             this.comboBoxService.Name = "comboBoxService";
             this.comboBoxService.Size = new System.Drawing.Size(215, 29);
             this.comboBoxService.TabIndex = 1;
+            this.comboBoxService.SelectedIndexChanged += new System.EventHandler(this.comboBoxService_SelectedIndexChanged);
             // 
             // pictureBox1
             // 
@@ -160,6 +161,7 @@
             this.textBoxWidth.Name = "textBoxWidth";
             this.textBoxWidth.Size = new System.Drawing.Size(149, 28);
             this.textBoxWidth.TabIndex = 10;
+            this.textBoxWidth.TextChanged += new System.EventHandler(this.textBoxWidth_TextChanged);
             // 
             // textBoxHeight
             // 
@@ -167,6 +169,7 @@
             this.textBoxHeight.Name = "textBoxHeight";
             this.textBoxHeight.Size = new System.Drawing.Size(149, 28);
             this.textBoxHeight.TabIndex = 12;
+            this.textBoxHeight.TextChanged += new System.EventHandler(this.textBoxHeight_TextChanged);
             // 
             // labelHeight
             // 
